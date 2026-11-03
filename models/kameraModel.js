@@ -28,6 +28,7 @@ const kameraSchema = new mongoose.Schema({
         trim: true
     },
     kelengkapan: kelengkapanSchema,
+    merekKameraId: { type: mongoose.Schema.Types.ObjectId, ref: 'merekKamera'},
     createdAt: { type: Date, default: Date.now },
 
     

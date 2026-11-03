@@ -1,11 +1,11 @@
-const Parawisata = require('../models/kameraModel');
+const Kamera = require('../models/kameraModel');
+const Kamera = require('../models/kameraModel');
 const { errorHttp } = require('../middlewares/errorHandler');
 
-// const FASILITAS = ['Parkir', 'Musholla', 'Toilet', 'Kuliner', 'ramahDisabilitas'];
 const LIMIT_DEFAULT = 10;
 const LIMIT_MAKS = 50;
 const FIELD_SORT = ['noSeri', 'model', 'tarifHarian', 'jenis', 'createdAt'];
-const FIELD_BOLEH_DIPILIH = ['noSeri', 'model', 'tarifHarian', 'jenis', 'fasilitas', 'createdAt'];
+const FIELD_BOLEH_DIPILIH = ['noSeri', 'model', 'tarifHarian', 'jenis', 'merekKameraId', 'createdAt'];
 
 // Mengubah bilangan dari query string menjadi bilangan bulat yang aman
 function angkaAman(nilai, bawaan, min, maks) {
@@ -15,30 +15,21 @@ function angkaAman(nilai, bawaan, min, maks) {
 }
 
 exports.create = async (req, res) => {
-    const { noSeri, model, tarifHarian, jenis, fasilitas } = req.body;
-    const parawisata = await Parawisata.create({ nama, kota, kategori, hargaTiket, jamBuka, fasilitas });
-    res.status(201).json(parawisata);
+    const Kamera = await Kamera.create(req.body);
+    res.status(201).json(kamera);
 };
+
 
 
 exports.getAll = async (req, res) => {
     const filter = {};
-
     if (req.query.kota) {
-        filter.kota = String(req.query.kota);
-    }
-    if (req.query.kategori) {
-        filter.kategori = String(req.query.kategori);
-    }
-    if (req.query.fasilitas) {
-        const diminta = String(req.query.fasilitas)
-            .split(',')
-            .map((s) => s.trim().toLowerCase());
-        for (const nama of FASILITAS) {
-            if (diminta.includes(nama.toLowerCase())) {
-                filter[`fasilitas.${nama}`] = true;
-            }
+        filter['alamat.kota'] = String(req.query.kota);
         }
+    if (req.query.merekKamera) {
+        const merekKamera = await merekKamera.findOne({ kode: String(req.query.merekKamera).toUpperCase() });
+        // Kode merekKamera tidak dikenal -> hasil kosong ($in: [] tidak cocok dengan apa pun)
+        filter.merekKameraId = merekKamera ? merekKamera._id : { $in: [] };
     }
 
     const page = angkaAman(req.query.page, 1, 1, Number.MAX_SAFE_INTEGER);
@@ -52,7 +43,7 @@ exports.getAll = async (req, res) => {
         throw errorHttp(400, `sort hanya boleh: ${FIELD_SORT.join(', ')}`);
     }
 
-    // Projection: ?fields=nama,kota
+    // Projection: ?fields=nama,nim
     let select = '';
     if (req.query.fields) {
         const fields = String(req.query.fields).split(',').map((f) => f.trim());
@@ -62,34 +53,34 @@ exports.getAll = async (req, res) => {
         select = fields.join(' ');
     }
 
-    const collation = { locale: 'en', strength: 2 };
-
-    const query = Parawisata.find(filter)
-        .collation(collation)
+    const query = Kamera.find(filter)
         .select(select)
         .sort({ [sortField]: arah, _id: 1 })
         .skip((page - 1) * limit)
         .limit(limit);
 
-    const [data, total] = await Promise.all([
-        query,
-        Parawisata.countDocuments(filter).collation(collation),
-    ]);
+    // populate() otomatis menambahkan merekKameraId ke hasil, jadi hanya dipanggil
+    // bila merekKameraId memang diminta (atau bila tidak ada pemilihan field)
+    if (!select || select.split(' ').includes('merekKameraId')) {
+        query.populate('merekKameraId', 'kode nama');
+    }
+
+    const [data, total] = await Promise.all([query, Kamera.countDocuments(filter)]);
 
     res.json({ data, page, limit, total, totalPages: Math.ceil(total / limit) });
 };
 
 exports.getById = async (req, res) => {
-    const data = await Parawisata.findById(req.params.id);
+    const data = await Kamera.findById(req.params.id);
     if (!data) throw errorHttp(404, 'Data tidak ditemukan');
     res.json(data);
 };
 
 exports.update = async (req, res) => {
-    const { nama, kota, kategori, hargaTiket, jamBuka, fasilitas } = req.body;
-    const data = await Parawisata.findByIdAndUpdate(
+    const { noSeri, model, tarifHarian, jenis, kelengkapan } = req.body;
+    const data = await Kamera.findByIdAndUpdate(
         req.params.id,
-        { nama, kota, kategori, hargaTiket, jamBuka, fasilitas },
+        { noSeri, model, tarifHarian, jenis, kelengkapan },
         { returnDocument: 'after', runValidators: true }
     );
     if (!data) throw errorHttp(404, 'Data tidak ditemukan');
@@ -97,7 +88,7 @@ exports.update = async (req, res) => {
 };
 
 exports.remove = async (req, res) => {
-    const data = await Parawisata.findByIdAndDelete(req.params.id);
+    const data = await Kamera.findByIdAndDelete(req.params.id);
     if (!data) throw errorHttp(404, 'Data tidak ditemukan');
     res.status(204).send();
 };
