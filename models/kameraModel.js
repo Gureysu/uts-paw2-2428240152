@@ -1,21 +1,35 @@
 
 const mongoose = require('mongoose');
 
+const kelengkapanSchema = new mongoose.Schema({
+    lensa: String,
+    baterai: String,
+}, { _id: false })
+
 const kameraSchema = new mongoose.Schema({
-    motif: {
+    noSeri: {
         type: String,
-        required: [true, 'motif wajib diisi'],
+        required: [true, 'nomor seri wajib diisi'],
+        unique: true,
         trim: true
     },
-    harga: {
+    model: {
+        type: String,
+        required: [true, 'model wajib diisi'],
+        trim: true
+    },
+    tarifHarian: {
         type: Number,
-        required: [true, 'harga wajib diisi']
+        required: [true, 'tarif harian wajib diisi']
     },
-    benang: {
+    jenis: {
         type: String,
-        required: [true, 'benang wajib diisi'],
+        required: [true, 'jenis wajib diisi'],
         trim: true
     },
+    kelengkapan: kelengkapanSchema,
+    createdAt: { type: Date, default: Date.now },
+
     
 });
 

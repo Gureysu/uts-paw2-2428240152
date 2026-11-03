@@ -1,11 +1,11 @@
 const Parawisata = require('../models/kameraModel');
 const { errorHttp } = require('../middlewares/errorHandler');
 
-const FASILITAS = ['Parkir', 'Musholla', 'Toilet', 'Kuliner', 'ramahDisabilitas'];
+// const FASILITAS = ['Parkir', 'Musholla', 'Toilet', 'Kuliner', 'ramahDisabilitas'];
 const LIMIT_DEFAULT = 10;
 const LIMIT_MAKS = 50;
-const FIELD_SORT = ['nama', 'kota', 'kategori', 'hargaTiket', 'createdAt'];
-const FIELD_BOLEH_DIPILIH = ['nama', 'kota', 'kategori', 'hargaTiket', 'jamBuka', 'fasilitas', 'createdAt'];
+const FIELD_SORT = ['noSeri', 'model', 'tarifHarian', 'jenis', 'createdAt'];
+const FIELD_BOLEH_DIPILIH = ['noSeri', 'model', 'tarifHarian', 'jenis', 'fasilitas', 'createdAt'];
 
 // Mengubah bilangan dari query string menjadi bilangan bulat yang aman
 function angkaAman(nilai, bawaan, min, maks) {
@@ -15,7 +15,7 @@ function angkaAman(nilai, bawaan, min, maks) {
 }
 
 exports.create = async (req, res) => {
-    const { nama, kota, kategori, hargaTiket, jamBuka, fasilitas } = req.body;
+    const { noSeri, model, tarifHarian, jenis, fasilitas } = req.body;
     const parawisata = await Parawisata.create({ nama, kota, kategori, hargaTiket, jamBuka, fasilitas });
     res.status(201).json(parawisata);
 };
