@@ -1,5 +1,5 @@
 const Kamera = require('../models/kameraModel');
-const Kamera = require('../models/kameraModel');
+const merekKamera = require('../models/merekKameraModel');
 const { errorHttp } = require('../middlewares/errorHandler');
 
 const LIMIT_DEFAULT = 10;
