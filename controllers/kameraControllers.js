@@ -78,7 +78,7 @@ exports.update = async (req, res) => {
     const data = await Kamera.findByIdAndUpdate(
         req.params.id,
         req.body,
-        { returnDocument: 'after', runValidators: true }
+        { new: true }
     );
     if (!data) throw errorHttp(404, 'Data tidak ditemukan');
     res.json(data);
